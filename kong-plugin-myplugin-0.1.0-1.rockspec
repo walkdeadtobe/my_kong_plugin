@@ -11,7 +11,7 @@ local pluginName = package:match("^kong%-plugin%-(.+)$")  -- "myPlugin"
 
 supported_platforms = {"linux", "macosx"}
 source = {
-  url = "http://github.com/Kong/kong-plugin.git",
+  url = "https://github.com/walkdeadtobe/my_kong_plugin.git",
   tag = "0.1.0"
 }
 
@@ -28,7 +28,7 @@ build = {
   type = "builtin",
   modules = {
     -- TODO: add any additional files that the plugin consists of
-    ["kong.plugins."..pluginName..".handler"] = "kong/plugins/"..pluginName.."/handler.lua",
-    ["kong.plugins."..pluginName..".schema"] = "kong/plugins/"..pluginName.."/schema.lua",
+    ["kong.plugins."..pluginName..".handler"] = ""..pluginName.."/handler.lua",
+    ["kong.plugins."..pluginName..".schema"] = ""..pluginName.."/schema.lua",
   }
 }
