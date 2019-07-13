@@ -28,7 +28,7 @@ build = {
   type = "builtin",
   modules = {
     -- TODO: add any additional files that the plugin consists of
-    ["kong.plugins."..pluginName..".handler"] = ""..pluginName.."/handler.lua",
-    ["kong.plugins."..pluginName..".schema"] = ""..pluginName.."/schema.lua",
+    ["kong.plugins."..pluginName..".handler"] = "kong/plugins/"..pluginName.."/handler.lua",
+    ["kong.plugins."..pluginName..".schema"] = "kong/plugins/"..pluginName.."/schema.lua",
   }
 }
