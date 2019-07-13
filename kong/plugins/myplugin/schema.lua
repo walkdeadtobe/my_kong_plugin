@@ -1,5 +1,6 @@
+local typedefs = require "kong.db.schema.typedefs"
 return {
-  no_consumer = false, -- this plugin is available on APIs as well as on Consumers,
+  no_consumer = true, -- this plugin is available on APIs as well as on Consumers,
   fields = {
     -- Describe your plugin's configuration's schema here.
     

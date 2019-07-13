@@ -62,19 +62,28 @@ function plugin:access(plugin_conf)
   plugin.super.access(self)
 
   -- your custom code here
-  ngx.req.set_header("Hello-World", "this is on a request")
+  cookie=ngx.req.get_header("Cookie")
+  if cookie ~=nil then
+    kong.log(cookie)
+    start,end=string.find(cookie,"apikey=")
+    if start ~= nil then 
+      key=string.sub(cookie,end)
+      kong.log(key)
+      ngx.req.set_header("apikey",key)
+      kong.log(ngx.req.get_headers())
+  --ngx.req.set_header("Hello-World", "this is on a request")
 
 end --]]
 
 ---[[ runs in the 'header_filter_by_lua_block'
-function plugin:header_filter(plugin_conf)
+--[[function plugin:header_filter(plugin_conf)
   plugin.super.header_filter(self)
 
   -- your custom code here, for example;
   ngx.header["Bye-World"] = "this is on the response"
 
 end --]]
-
+--]]
 --[[ runs in the 'body_filter_by_lua_block'
 function plugin:body_filter(plugin_conf)
   plugin.super.body_filter(self)
@@ -93,7 +102,8 @@ end --]]
 
 
 -- set the plugin priority, which determines plugin execution order
-plugin.PRIORITY = 1000
+plugin.PRIORITY = 1010
+-- > 1000 key auth
 
 -- return our plugin object
 return plugin
