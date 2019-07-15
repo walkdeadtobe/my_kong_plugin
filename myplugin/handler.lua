@@ -62,15 +62,20 @@ function plugin:access(plugin_conf)
   plugin.super.access(self)
 
   -- your custom code here
-  cookie=ngx.req.get_header("Cookie")
+ -- cookie=ngx.req.get_header("Cookie")
+  cookie=kong.request.get_header("Cookie")
   if cookie ~=nil then
     kong.log(cookie)
-    start,end=string.find(cookie,"apikey=")
+    start,endd=string.find(cookie,"apikey")
     if start ~= nil then 
-      key=string.sub(cookie,end)
+      key=string.sub(cookie,endd+1)
       kong.log(key)
-      ngx.req.set_header("apikey",key)
+      -- ngx.req.set_header("apikey",key)
+      kong.service.request.add_header("apikey",key)
       kong.log(ngx.req.get_headers())
+      kong.log(kong.request.get_header('apikey'))
+    end
+  end
   --ngx.req.set_header("Hello-World", "this is on a request")
 
 end --]]
