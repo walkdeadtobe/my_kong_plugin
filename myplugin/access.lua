@@ -54,7 +54,7 @@ function prepare()
     kong.log.error("no forward_ip,return error")
     kong.response.exit(500, "An unexpected error occurred:there is no forward_ip")
   else
-    kong.log("forward_ip="+forward_ip)
+    kong.log("forward_ip=",forward_ip)
     if string.find(forward_ip,"210.14.118.96") then 
       sso_index=0 
     elseif string.find(forward_ip,"210.14.118.96") or string.find(forward_ip,"smart.cast.org.cn") then
@@ -71,13 +71,13 @@ get token from cookie
 function get_token()
   if cookie ~=nil 
   then
-    kong.log("cookie="+cookie)
+    kong.log("cookie=",cookie)
     local pattern="token=[a-z0-9]{4,20}-[a-z0-9]{4,20}-[a-z0-9]{4,20}-[a-z0-9]{4,20}-[a-z0-9]{4,20}"
     local start,endd=string.find(cookie,pattern)
     if start ~= nil 
     then 
       token=string.sub(cookie,start+6,endd)
-      kong.log("token="+token)
+      kong.log("token=",token)
       -- ngx.req.set_header("apikey",key)
       --kong.service.request.add_header("apikey",key)
       --kong.log(ngx.req.get_headers())
@@ -115,7 +115,7 @@ function handle_token()
       local json = cjson.decode(res.body)
       if json ~= nil and  json["PERSON_ID"] ~= nil then
         -- configure nginx log to add my_username my_username_1
-        kong.log("personid="+json["PERSON_ID"])
+        kong.log("personid=",json["PERSON_ID"]
         nginx.request.set_header("my_username",json["PERSON_ID"])
         kong.service.request.add_header("my_username_1",json["PERSON_ID"])
         kong.log(ngx.req.get_headers())
@@ -126,4 +126,6 @@ function handle_token()
     return
   end
 end
+
+return _M 
 
