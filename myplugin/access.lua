@@ -5,11 +5,18 @@ local cjson = require "cjson.safe"
 
 local _M={}
 local sso={"http://111.203.146.69/oauth/check_token","http://sso-smart.cast.org.cn:8080/oauth/check_token"}
-local auth={"http://111.203.146.69/oauth/authorize?client_id=talent&redirect_uri=/oauth/code?back_to=http://210.14.118.96/ep/cookie_talent.html&response_type=code&scope=read",
-      "http://sso-smart.cast.org.cn:8080/oauth/authorize?client_id=talent&redirect_uri=/oauth/code?back_to=http://210.14.118.96/ep/cookie_talent.html&response_type=code&scope=read"}
+local auth={"http://111.203.146.69/oauth/authorize?client_id=keixe&redirect_uri=/oauth/code?back_to=http://210.14.118.96/ep/cookie.html&response_type=code&scope=read",
+            "http://111.203.146.69/oauth/authorize?client_id=talent&redirect_uri=/oauth/code?back_to=http://210.14.118.96/ep/cookie_talent.html&response_type=code&scope=read",
+            "http://sso-smart.cast.org.cn:8080/oauth/authorize?client_id=kexie&redirect_uri=/oauth/code?back_to=http://210.14.118.96/ep/cookie.html&response_type=code&scope=read",
+            "http://sso-smart.cast.org.cn:8080/oauth/authorize?client_id=talent&redirect_uri=/oauth/code?back_to=http://210.14.118.96/ep/cookie_talent.html&response_type=code&scope=read"
+          }
+
+
 local sso_index=0
+local auth_index=0
 local cookie=nil
 local forward_ip=nil
+local http_refer=nil
 local token=nil
 
 
@@ -18,6 +25,7 @@ function _M.run()
  -- cookie=ngx.req.get_header("Cookie")
   cookie=kong.request.get_header("Cookie")
   forward_ip=kong.client.get_forwarded_ip()
+  http_refer=ngx.req.get_header("http_referer")
   
   prepare()
 
@@ -56,11 +64,28 @@ function prepare()
   else
     kong.log("forward_ip=",forward_ip)
     if string.find(forward_ip,"210.14.118.96") then 
-      sso_index=0 
+      sso_index=1 --数组从1开始计数 
     elseif string.find(forward_ip,"210.14.118.96") or string.find(forward_ip,"smart.cast.org.cn") then
-      sso_index=1
+      sso_index=2
     else
       kong.response.exit(500,"An unexpected error occurred:forward_ip should be 210.14.118.96/95 or smart.cast.org.cn")
+    end
+  end
+
+  if http_refer == nil 
+  then
+    -- 默认请求来源 210.14.118.96/95
+    kong.log.error("there is no  http_referer ")
+    -- 后面需要用到这个变量
+    http_refer="null"
+    auth_index=0
+  else
+    kong.log("http_referer=",http_refer)
+    if string.find(http_refer,"ep") or string.find(http_refer,"talent") then 
+      --默认请求来源 210.14.118.96/ep 或 默认请求来源 210.14.118.95/talent 
+      sso_index=1 
+    else
+      sso_index=0
     end
   end
 end
@@ -96,12 +121,12 @@ consider set consumer information in cache
 --]]
 function handle_token()
   local httpc= http:new()
-  local res,err=httpc:request_uri(sso[sso_index],{
+  local res,err=httpc:request_uri(sso[sso_index].."?grant_type=authorization_code&token="..token,{
     method = "GET",
-    headers={
+    --[[headers={
       ["grant_type"]="authorization_code",
       ["token"]=token
-    }
+    }]]--
   })
 
   -- response
@@ -109,14 +134,14 @@ function handle_token()
   then
     if res.status ~= 200 
     then
-      kong.response.exit(401,"Unauthorized:token is invalid",{["Location"]=auth[sso_index]})
+      kong.response.exit(401,"Unauthorized:token is invalid",{["Location"]=auth[sso_index].."&refer="..http_refer})
     else
       kong.log("res.status = 200 ")
       local json = cjson.decode(res.body)
       if json ~= nil and  json["PERSON_ID"] ~= nil then
         -- configure nginx log to add my_username my_username_1
-        kong.log("personid=",json["PERSON_ID"]
-        nginx.request.set_header("my_username",json["PERSON_ID"])
+        kong.log("personid=",json["PERSON_ID"])
+        ngx.req.set_header("my_username",json["PERSON_ID"])
         kong.service.request.add_header("my_username_1",json["PERSON_ID"])
         kong.log(ngx.req.get_headers())
       end
