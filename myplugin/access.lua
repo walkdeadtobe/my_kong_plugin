@@ -25,7 +25,7 @@ function _M.run()
  -- cookie=ngx.req.get_header("Cookie")
   cookie=kong.request.get_header("Cookie")
   forward_ip=kong.client.get_forwarded_ip()
-  http_refer=ngx.req.get_header("http_referer")
+  http_refer=kong.request.get_header("http_referer")
   
   prepare()
 
@@ -75,7 +75,7 @@ function prepare()
   if http_refer == nil 
   then
     -- 默认请求来源 210.14.118.96/95
-    kong.log.error("there is no  http_referer ")
+    kong.log("there is no  http_referer ")
     -- 后面需要用到这个变量
     http_refer="null"
     auth_index=0
@@ -98,7 +98,7 @@ function get_token()
   then
     kong.log("cookie=",cookie)
     local pattern="token=[a-z0-9]{4,20}-[a-z0-9]{4,20}-[a-z0-9]{4,20}-[a-z0-9]{4,20}-[a-z0-9]{4,20}"
-    local start,endd=string.find(cookie,pattern)
+    local start,endd,err=ngx.re.find(cookie,pattern)
     if start ~= nil 
     then 
       token=string.sub(cookie,start+6,endd)
@@ -138,7 +138,13 @@ function handle_token()
     else
       kong.log("res.status = 200 ")
       local json = cjson.decode(res.body)
-      if json ~= nil and  json["PERSON_ID"] ~= nil then
+      if json == nil then 
+        kong.response.exit(500,"oauth server response empty body")
+      end
+      if json.status ~= 200 then
+        kong.response.exit(401,"Unauthorized:token is invalid",{["Location"]=auth[sso_index].."&refer="..http_refer})
+      end
+      if json["PERSON_ID"] ~= nil then
         -- configure nginx log to add my_username my_username_1
         kong.log("personid=",json["PERSON_ID"])
         ngx.req.set_header("my_username",json["PERSON_ID"])
