@@ -162,7 +162,7 @@ function plugin:access(plugin_conf)
 
 
 
-[[--
+--[[
   if cookie ~=nil then
     kong.log(cookie)
     start,endd=string.find(cookie,"apikey")
@@ -175,7 +175,7 @@ function plugin:access(plugin_conf)
       kong.log(kong.request.get_header('apikey'))
     end
   end
-  --]]
+  ]]--
   --ngx.req.set_header("Hello-World", "this is on a request")
 
 end --]]
