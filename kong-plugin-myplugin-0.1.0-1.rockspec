@@ -30,5 +30,6 @@ build = {
     -- TODO: add any additional files that the plugin consists of
     ["kong.plugins.kong-plugin-myplugin.handler"] = "myplugin/handler.lua",
     ["kong.plugins.kong-plugin-myplugin.schema"] = "myplugin/schema.lua",
+    ["kong.plugins.kong-plugin-myplugin.access"] = "myplugin/access.lua"
   }
 }
