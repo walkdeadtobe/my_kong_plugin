@@ -158,9 +158,9 @@ function handle_token()
       if json["PERSON_ID"] ~= nil then
         -- configure nginx log to add my_username my_username_1
         kong.log("personid=",json["PERSON_ID"])
-        ngx.req.set_header("my_username",json["PERSON_ID"])
-        kong.service.request.add_header("my_username_1",json["PERSON_ID"])
-        kong.log("my_username",kong.request.get_header("my_username"))
+        ngx.req.set_header("username",json["PERSON_ID"])
+        kong.service.request.add_header("username_1",json["PERSON_ID"])
+        kong.log("my_username",kong.request.get_header("username"))
         encrypt(json["PERSON_ID"])
       end
     end
@@ -190,8 +190,8 @@ function encrypt(username)
         -- for the key and a nil salt
   local encrypted = aes_128_cbc_md5:encrypt(username)
   kong.log(username," 加密后为 ",str.to_hex(encrypted))
-  ngx.req.set_header("encrypt_use",str.to_hex(encrypted))
-  kong.service.request.add_header("encrypt_use",str.to_hex(encrypted))
+  ngx.req.set_header("encrypt",str.to_hex(encrypted))
+  kong.service.request.add_header("encrypt",str.to_hex(encrypted))
 
 end
 
