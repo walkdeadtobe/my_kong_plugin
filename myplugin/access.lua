@@ -40,6 +40,11 @@ function _M.run()
     -- check token
     handle_token()
   end
+
+  start,endd,err=ngx.re.find("qqaaq","qq")
+  if start ~= nil then
+    kong.log("qqaaq",start)
+  end
 end
 
 --[[
