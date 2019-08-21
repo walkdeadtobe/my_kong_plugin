@@ -28,14 +28,17 @@ function _M.run()
   cookie=kong.request.get_header("Cookie")
   forward_ip=kong.client.get_forwarded_ip()
   http_refer=kong.request.get_header("http_referer")
-  
-  prepare()
-
-  -- get token
-  get_token()
- 
-  -- check token
-  handle_token()
+  local path=kong.request.get_path_with_query()
+  local path_pattern="/api/v1/data/oauth/(34fa6f5dcaec9149a513c0193002e77d|e6c2550b9b069be64a79d8a40bf94bed)?code=[0-9a-zA-Z]{1,10}&client_id=(kexie|talent)"
+  local start,endd,err=ngx.re.find(path,path_pattern)
+  if start == nil then
+    kong.log("path:",path)
+    prepare()
+    -- get token
+    get_token()
+    -- check token
+    handle_token()
+  end
 end
 
 --[[
@@ -149,9 +152,9 @@ function handle_token()
       if json["PERSON_ID"] ~= nil then
         -- configure nginx log to add my_username my_username_1
         kong.log("personid=",json["PERSON_ID"])
-        ngx.req.set_header("my_username",json["PERSON_ID"])
-        kong.service.request.add_header("my_username_1",json["PERSON_ID"])
-        kong.log(ngx.req.get_headers())
+        ngx.req.set_header("my_username_1",json["PERSON_ID"])
+        kong.service.request.add_header("my_username",json["PERSON_ID"])
+        kong.log("my_username",kong.request.get_header("my_username"))
         encrypt(json["PERSON_ID"])
       end
     end
@@ -182,6 +185,7 @@ function encrypt(username)
   local encrypted = aes_128_cbc_md5:encrypt(username)
   kong.log(username," 加密后为 ",str.to_hex(encrypted))
   ngx.req.set_header("encrypt_use",str.to_hex(encrypted))
+  kong.service.request.add_header("encrypt_use",str.to_hex(encrypted))
 
 end
 
