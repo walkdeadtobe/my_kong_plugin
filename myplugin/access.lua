@@ -165,6 +165,7 @@ function encrypt(token,username)
   local count=0
   for i=1,len do
     count=count+string.byte(token,i)
+  end
   count=tostring(count%10)
   local aes_128_cbc_md5 = aes:new(count)
         -- the default cipher is AES 128 CBC with 1 round of MD5
