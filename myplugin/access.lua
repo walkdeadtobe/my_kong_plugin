@@ -158,8 +158,8 @@ function handle_token()
       if json["PERSON_ID"] ~= nil then
         -- configure nginx log to add my_username my_username_1
         kong.log("personid=",json["PERSON_ID"])
-        ngx.req.set_header("my_username_1",json["PERSON_ID"])
-        kong.service.request.add_header("my_username",json["PERSON_ID"])
+        ngx.req.add_header("my_username",json["PERSON_ID"])
+        kong.service.request.add_header("my_username_1",json["PERSON_ID"])
         kong.log("my_username",kong.request.get_header("my_username"))
         encrypt(json["PERSON_ID"])
       end
