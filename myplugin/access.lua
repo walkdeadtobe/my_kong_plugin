@@ -14,7 +14,7 @@ local auth={"http://111.203.146.69/oauth/authorize?client_id=keixe&redirect_uri=
           }
 
 
-local sso_index=0
+local sso_index=1
 local auth_index=0
 local cookie=nil
 local forward_ip=nil
