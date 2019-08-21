@@ -31,8 +31,9 @@ function _M.run()
   local path=kong.request.get_path_with_query()
   local path_pattern="/api/v1/data/oauth/(34fa6f5dcaec9149a513c0193002e77d|e6c2550b9b069be64a79d8a40bf94bed)?code=[0-9a-zA-Z]{1,10}&client_id=(kexie|talent)"
   local start,endd,err=ngx.re.find(path,path_pattern)
+  kong.log("path0:",path)
   if start == nil then
-    kong.log("path:",path)
+    kong.log("path1:",path)
     prepare()
     -- get token
     get_token()
