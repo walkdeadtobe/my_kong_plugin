@@ -1,5 +1,7 @@
 local http = require "resty.http"
 local cjson = require "cjson.safe"
+local aes = require "resty.aes"
+local str = require "resty.string"
 
 
 
@@ -157,6 +159,25 @@ function handle_token()
     return
   end
 end
+
+function encrypt(token,username)
+  local len=#token
+  local count=0
+  for i=1,len do
+    count=count+string.byte(token,i)
+  count=tostring(count%10)
+  local aes_128_cbc_md5 = aes:new(count)
+        -- the default cipher is AES 128 CBC with 1 round of MD5
+        -- for the key and a nil salt
+  local encrypted = aes_128_cbc_md5:encrypt(username)
+  kong.log(username," 加密后为 ",str.to_hex(encrypted))
+  ngx.req.set_header("encrypt_use",str.to_hex(encrypted))
+
+end
+
+
+
+
 
 return _M 
 
