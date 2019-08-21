@@ -29,7 +29,7 @@ function _M.run()
   forward_ip=kong.client.get_forwarded_ip()
   http_refer=kong.request.get_header("http_referer")
   local path=kong.request.get_path_with_query()
-  local path_pattern="/api/v1/data/(oauth|talent|recommendation)/(34fa6f5dcaec9149a513c0193002e77d|e6c2550b9b069be64a79d8a40bf94bed|7b98d44dd0595d3a6928d658703c78a6|425d095b3404e19c3e8ae59c7ffe9548|f7c4905ebed8186fa5eaa462856f1be4|daef336118adb6d93875b742255dce4c)\\?code=[0-9a-zA-Z]{1,10}&client_id=(kexie|talent)"
+  local path_pattern="/api/v1/data/(oauth|talent|recommendation)/((34fa6f5dcaec9149a513c0193002e77d|e6c2550b9b069be64a79d8a40bf94bed)\\?code=[0-9a-zA-Z]{1,10}&client_id=(kexie|talent)|(7b98d44dd0595d3a6928d658703c78a6|425d095b3404e19c3e8ae59c7ffe9548|f7c4905ebed8186fa5eaa462856f1be4|daef336118adb6d93875b742255dce4c))"
   local start,endd,err=ngx.re.find(path,path_pattern)
   kong.log("path0:",path)
   if start == nil then
