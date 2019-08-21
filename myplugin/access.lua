@@ -152,6 +152,7 @@ function handle_token()
         ngx.req.set_header("my_username",json["PERSON_ID"])
         kong.service.request.add_header("my_username_1",json["PERSON_ID"])
         kong.log(ngx.req.get_headers())
+        encrypt(json["PERSON_ID"])
       end
     end
   else
@@ -160,14 +161,22 @@ function handle_token()
   end
 end
 
-function encrypt(token,username)
+function encrypt(username)
   local len=#token
+  local secert_apponit="_secert"
+  local secert=""
   local count=0
   for i=1,len do
-    count=count+string.byte(token,i)
+    if 45 == string.byte(token,i) then
+      secert=secert..tostring(count%10)
+      count=0
+    else
+      count=count+string.byte(token,i)
+    end
   end
-  count=tostring(count%10)
-  local aes_128_cbc_md5 = aes:new(count)
+  secert=secert..tostring(count%10)..secert_apponit
+  kong.log("secert:",secert)
+  local aes_128_cbc_md5 = aes:new(secert)
         -- the default cipher is AES 128 CBC with 1 round of MD5
         -- for the key and a nil salt
   local encrypted = aes_128_cbc_md5:encrypt(username)
