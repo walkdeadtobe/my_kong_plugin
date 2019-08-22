@@ -1,6 +1,7 @@
 local http = require "resty.http"
 local cjson = require "cjson.safe"
 local aes = require "resty.aes"
+local resty_md5 = require "resty.md5"
 local str = require "resty.string"
 
 
@@ -169,32 +170,43 @@ end
 
 function encrypt(username)
   local len=#token
-  local secert_apponit="_secert"
+  local time=os.date("%Y-%m-%d")
   local secert=""
   local count=0
   for i=1,len do
     if 45 == string.byte(token,i) then
-      secert=secert..tostring(count%10)
+      secert=secert.."0"..tostring(count%10)
       count=0
     else
       count=count+string.byte(token,i)
     end
   end
-  secert=secert..tostring(count%10)..secert_apponit
-  kong.log("secert:",secert)
-  local aes_128_cbc_md5 = aes:new(secert,nil,aes.cipher(128,"cbc"))
+  secert=secert.."0"..tostring(count%10)
+  kong.log("secert:",personid..secert..time)
+  local md5 = resty_md5:new()
+  local ok = md5:update(personid..secert..time)
+  if not ok then
+      ngx.say("failed to add data")
+      return
+  end
+  local digest = md5:final()
+  kong.log("md5: ", str.to_hex(digest))
+  ngx.req.set_header("md5sum",(encrypted))
+  ---[[
+  local aes_128_cbc_md5 = aes:new(secert,nil,aes.cipher(128,"cbc"), {iv="1234567890123456"})
         -- the default cipher is AES 128 CBC with 1 round of MD5
         -- for the key and a nil salt
   len=16-#username
-  if i=1,len do
-    username.."x"
+  for i=1,len do
+    username=username.."x"
   end
-  ngx.req.set_header("usename++:",usename)
+  ngx.req.set_header("usename++:",username)
   local encrypted = aes_128_cbc_md5:encrypt(username)
   kong.log(username," 加密后为 ",str.to_hex(encrypted))
-  ngx.req.set_header("encrypt",(encrypted)
+  ngx.req.set_header("encrypt1",(encrypted))
   ngx.req.set_header("encrypt",str.to_hex(encrypted))
   --kong.service.request.add_header("encrypt",str.to_hex(encrypted))
+  ---]]
 
 end
 
