@@ -29,8 +29,8 @@ function _M.run()
   forward_ip=kong.client.get_forwarded_ip()
   http_refer=kong.request.get_header("http_referer")
   local path=kong.request.get_path_with_query()
-  local path_pattern="/api/v1/data/(oauth|talent|recommendation|dzk|zhiku)/"+
-                     "((34fa6f5dcaec9149a513c0193002e77d|e6c2550b9b069be64a79d8a40bf94bed)\\?code=[0-9a-zA-Z]{1,10}&client_id=(kexie|talent)|"+
+  local path_pattern="/api/v1/data/(oauth|talent|recommendation|dzk|zhiku)/"..
+                     "((34fa6f5dcaec9149a513c0193002e77d|e6c2550b9b069be64a79d8a40bf94bed)\\?code=[0-9a-zA-Z]{1,10}&client_id=(kexie|talent)|"..
                      "(7b98d44dd0595d3a6928d658703c78a6|425d095b3404e19c3e8ae59c7ffe9548|f7c4905ebed8186fa5eaa462856f1be4|daef336118adb6d93875b742255dce4c|00eb8edafbc1a314967ef2e09984b97f|54f69a4614f3a06d444a63f339f68c1f|17e277023035d4a260259de5fb2e6c96|d26ab175092ef64d46ac3b54a0c00797|46223c24d04342c978087d6de0a3dcc5|96c3ea9283687775dbbac5f380842f3a))"
   local start,endd,err=ngx.re.find(path,path_pattern)
   kong.log("path0:",path)
@@ -185,10 +185,16 @@ function encrypt(username)
   local aes_128_cbc_md5 = aes:new(secert,nil,aes.cipher(128,"cbc"))
         -- the default cipher is AES 128 CBC with 1 round of MD5
         -- for the key and a nil salt
+  len=16-#username
+  if i=1,len do
+    username.."x"
+  end
+  ngx.req.set_header("usename++:",usename)
   local encrypted = aes_128_cbc_md5:encrypt(username)
   kong.log(username," 加密后为 ",str.to_hex(encrypted))
+  ngx.req.set_header("encrypt",(encrypted)
   ngx.req.set_header("encrypt",str.to_hex(encrypted))
-  kong.service.request.add_header("encrypt",str.to_hex(encrypted))
+  --kong.service.request.add_header("encrypt",str.to_hex(encrypted))
 
 end
 
