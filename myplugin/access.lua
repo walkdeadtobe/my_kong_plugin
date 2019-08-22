@@ -170,7 +170,7 @@ end
 
 function encrypt(username)
   local len=#token
-  local time=os.date("%Y-%m-%d")
+  local time=os.date("%Y-%m-%d-%H-%M")
   local secert=""
   local count=0
   for i=1,len do
@@ -181,17 +181,17 @@ function encrypt(username)
       count=count+string.byte(token,i)
     end
   end
-  secert=secert.."0"..tostring(count%10)
-  kong.log("secert:",personid..secert..time)
+  secert=secert.."0"..tostring(count%10).."secret"
+  kong.log("secert:",username..secert..time)
   local md5 = resty_md5:new()
-  local ok = md5:update(personid..secert..time)
+  local ok = md5:update(token..time)
   if not ok then
       ngx.say("failed to add data")
       return
   end
   local digest = md5:final()
   kong.log("md5: ", str.to_hex(digest))
-  ngx.req.set_header("md5sum",(encrypted))
+  ngx.req.set_header("md5sum",str.to_hex(digest))
   ---[[
   local aes_128_cbc_md5 = aes:new(secert,nil,aes.cipher(128,"cbc"), {iv="1234567890123456"})
         -- the default cipher is AES 128 CBC with 1 round of MD5
