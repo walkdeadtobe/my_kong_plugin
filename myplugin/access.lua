@@ -28,7 +28,7 @@ function _M.run()
  -- cookie=ngx.req.get_header("Cookie")
   cookie=kong.request.get_header("Cookie")
   forward_ip=kong.client.get_forwarded_ip()
-  http_refer=kong.request.get_header("http_referer")
+  http_refer=kong.request.get_header("referer")
   local path=kong.request.get_path_with_query()
   local path_pattern="/api/v1/data/(oauth|talent|recommendation|dzk|zhiku)/"..
                      "((34fa6f5dcaec9149a513c0193002e77d|e6c2550b9b069be64a79d8a40bf94bed)\\?code=[0-9a-zA-Z]{1,10}&client_id=(kexie|talent)|"..
