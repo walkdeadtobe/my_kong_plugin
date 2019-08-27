@@ -15,8 +15,8 @@ local auth={"http://111.203.146.69/oauth/authorize?client_id=keixe&redirect_uri=
           }
 
 
-local sso_index=1
-local auth_index=0
+local sso_index=2
+local auth_index=1
 local cookie=nil
 local forward_ip=nil
 local http_refer=nil
@@ -32,7 +32,7 @@ function _M.run()
   local path=kong.request.get_path_with_query()
   local path_pattern="/api/v1/data/(oauth|talent|recommendation|dzk|zhiku)/"..
                      "((34fa6f5dcaec9149a513c0193002e77d|e6c2550b9b069be64a79d8a40bf94bed)\\?code=[0-9a-zA-Z]{1,10}&client_id=(kexie|talent)|"..
-                     "(7b98d44dd0595d3a6928d658703c78a6|425d095b3404e19c3e8ae59c7ffe9548|f7c4905ebed8186fa5eaa462856f1be4|daef336118adb6d93875b742255dce4c|00eb8edafbc1a314967ef2e09984b97f|54f69a4614f3a06d444a63f339f68c1f|17e277023035d4a260259de5fb2e6c96|d26ab175092ef64d46ac3b54a0c00797|46223c24d04342c978087d6de0a3dcc5|96c3ea9283687775dbbac5f380842f3a))"
+                     "(7b98d44dd0595d3a6928d658703c78a6|425d095b3404e19c3e8ae59c7ffe9548|f7c4905ebed8186fa5eaa462856f1be4|daef336118adb6d93875b742255dce4c|00eb8edafbc1a314967ef2e09984b97f|54f69a4614f3a06d444a63f339f68c1f|17e277023035d4a260259de5fb2e6c96|d26ab175092ef64d46ac3b54a0c00797|46223c24d04342c978087d6de0a3dcc5|96c3ea9283687775dbbac5f380842f3a|33713bba5afe32cafe719afd445adb89|fc0c864c56d424d7b0d4d7a7db82b584))"
   local start,endd,err=ngx.re.find(path,path_pattern)
   kong.log("path0:",path)
   if start == nil then
@@ -74,7 +74,7 @@ function prepare()
     kong.log("forward_ip=",forward_ip)
     if string.find(forward_ip,"210.14.118.96") then 
       sso_index=1 --数组从1开始计数 
-    elseif string.find(forward_ip,"210.14.118.96") or string.find(forward_ip,"smart.cast.org.cn") then
+    elseif string.find(forward_ip,"210.14.118.95") or string.find(forward_ip,"smart.cast.org.cn") then
       sso_index=2
     else
       --kong.response.exit(500,"An unexpected error occurred:forward_ip should be 210.14.118.96/95 or smart.cast.org.cn")
@@ -87,14 +87,14 @@ function prepare()
     kong.log("there is no  http_referer ")
     -- 后面需要用到这个变量
     http_refer="null"
-    auth_index=0
+    auth_index=1
   else
     kong.log("http_referer=",http_refer)
     if string.find(http_refer,"ep") or string.find(http_refer,"talent") then 
       --默认请求来源 210.14.118.96/ep 或 默认请求来源 210.14.118.95/talent 
-      sso_index=1 
+      sso_index=2
     else
-      sso_index=0
+      sso_index=1
     end
   end
 end
@@ -156,8 +156,8 @@ function handle_token()
       if json["PERSON_ID"] ~= nil then
         -- configure nginx log to add my_username my_username_1
         kong.log("personid=",json["PERSON_ID"])
-        ngx.req.set_header("username",json["PERSON_ID"])
-        kong.service.request.add_header("username_1",json["PERSON_ID"])
+        ngx.req.set_header("username-1",json["PERSON_ID"])
+        kong.service.request.add_header("username",json["PERSON_ID"])
         kong.log("my_username",kong.request.get_header("username"))
         encrypt(json["PERSON_ID"])
       end
