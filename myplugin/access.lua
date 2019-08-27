@@ -13,7 +13,7 @@ local auth={"http://111.203.146.69/oauth/authorize?client_id=keixe&redirect_uri=
             "http://sso-smart.cast.org.cn:8080/oauth/authorize?client_id=kexie&redirect_uri=/oauth/code?back_to=http://210.14.118.96/ep/cookie.html&response_type=code&scope=read",
             "http://sso-smart.cast.org.cn:8080/oauth/authorize?client_id=talent&redirect_uri=/oauth/code?back_to=http://210.14.118.96/ep/cookie_talent.html&response_type=code&scope=read"
           }
-
+--无需指明location，由前端页面指明refer=window.location
 
 local sso_index=2
 local auth_index=1
@@ -86,7 +86,6 @@ function prepare()
     -- 默认请求来源 210.14.118.96/95
     kong.log("there is no  http_referer ")
     -- 后面需要用到这个变量
-    http_refer="null"
     auth_index=1
   else
     kong.log("http_referer=",http_refer)
@@ -143,7 +142,7 @@ function handle_token()
   then
     if res.status ~= 200 
     then
-      kong.response.exit(401,"Unauthorized:token is invalid",{["Location"]=auth[sso_index].."&refer="..http_refer})
+      kong.response.exit(401,"Unauthorized:token is invalid",{["Location"]=auth[sso_index]})
     else
       kong.log("res.status = 200 ")
       local json = cjson.decode(res.body)
@@ -151,7 +150,7 @@ function handle_token()
         kong.response.exit(500,"oauth server response empty body")
       end
       if json.status ~= 200 then
-        kong.response.exit(401,"Unauthorized:token is invalid",{["Location"]=auth[sso_index].."&refer="..http_refer})
+        kong.response.exit(401,"Unauthorized:token is invalid",{["Location"]=auth[sso_index]})
       end
       if json["PERSON_ID"] ~= nil then
         -- configure nginx log to add my_username my_username_1
