@@ -32,7 +32,7 @@ function _M.run()
   local forward_ip=kong.client.get_forwarded_ip()
   local http_refer=kong.request.get_header("referer")
   my_variable['sso_index']=2
-  my_variable['auth_index']1=1
+  my_variable['auth_index']=1
   my_variable['cookie']=cookie
   my_variable['forward_ip']=forward_ip
   my_variable['http_refer']=http_refer
@@ -101,9 +101,9 @@ function prepare(my_variable)
     kong.log("http_referer=",http_refer)
     if string.find(http_refer,"ep") or string.find(http_refer,"talent") then 
       --默认请求来源 210.14.118.96/ep 或 默认请求来源 210.14.118.95/talent 
-      my_variable['sso_index']=2
+      my_variable['auth_index']=2
     else
-      my_variable['sso_index']=1
+      my_variable['auth_index']=1
     end
   end
   return my_variable
