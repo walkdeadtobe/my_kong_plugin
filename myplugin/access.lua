@@ -114,6 +114,8 @@ get token from cookie
 ]]--
 function get_token(my_variable)
   local cookie=my_variable['cookie']
+  local sso_index=my_variable['sso_index']
+  local auth_index=my_variable['auth_index']
   if cookie ~=nil 
   then
     kong.log("cookie=",cookie)
@@ -129,10 +131,10 @@ function get_token(my_variable)
       --kong.log(ngx.req.get_headers())
       --kong.log(kong.request.get_header('apikey'))
     else
-      kong.response.exit(401,"Unauthorized:there is no token or format of token is invalid")
+      kong.response.exit(401,"Unauthorized:there is no token or format of token is invalid",{["Location"]=auth[(sso_index-1)*2+auth_index]})
     end
   else
-    kong.response.exit(401,"Unauthorized:there is no token or format of token is invalid")
+    kong.response.exit(401,"Unauthorized:there is no token or format of token is invalid",{["Location"]=auth[(sso_index-1)*2+auth_index]})
   end
   return my_variable
 end
@@ -175,6 +177,7 @@ function handle_token(my_variable)
         ngx.req.set_header("username-1",json["PERSON_ID"])
         kong.service.request.add_header("username",json["PERSON_ID"])
         kong.log("my_username",kong.request.get_header("username"))
+        api_key(json["PERSON_ID"])
         encrypt(json["PERSON_ID"],token)
       end
     end
@@ -235,9 +238,7 @@ function api_key(name)
       ngx.say("failed to add data")
       return
   end
-  local digest = str.to_hex(digestmd5:final())
-  kong.log("name md5: ", str.to_hex(digest))
-  ngx.req.set_header("md5sum",str.to_hex(digest))
+  local digest = str.to_hex(md5:final())
   
   local len=#digest
   local key=""
