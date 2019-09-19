@@ -114,25 +114,33 @@ get token from cookie
 ]]--
 function get_token(my_variable)
   local cookie=my_variable['cookie']
+  --提取可能存放在url中的token
+  local url_token=kong.request.get_query_arg("token")
   local sso_index=my_variable['sso_index']
   local auth_index=my_variable['auth_index']
-  if cookie ~=nil 
+  if ( cookie ~=nil or url_token~= nil )
   then
-    kong.log("cookie=",cookie)
-    local pattern="token=[a-z0-9]{4,20}-[a-z0-9]{4,20}-[a-z0-9]{4,20}-[a-z0-9]{4,20}-[a-z0-9]{4,20}"
-    local start,endd,err=ngx.re.find(cookie,pattern)
-    if start ~= nil 
-    then 
-      token=string.sub(cookie,start+6,endd)
-      my_variable['token']=token
-      kong.log("token=",token)
-      -- ngx.req.set_header("apikey",key)
-      --kong.service.request.add_header("apikey",key)
-      --kong.log(ngx.req.get_headers())
-      --kong.log(kong.request.get_header('apikey'))
-    else
-      kong.response.exit(401,"Unauthorized:there is no token or format of token is invalid",{["Location"]=auth[(sso_index-1)*2+auth_index]})
-    end
+      kong.log("cookie=",cookie)
+      local pattern="token=[a-z0-9]{4,20}-[a-z0-9]{4,20}-[a-z0-9]{4,20}-[a-z0-9]{4,20}-[a-z0-9]{4,20}"
+      local start,endd,err=ngx.re.find(cookie,pattern)
+      if start ~= nil 
+      then 
+        token=string.sub(cookie,start+6,endd)
+        my_variable['token']=token
+        kong.log("token=",token)
+        -- ngx.req.set_header("apikey",key)
+        --kong.service.request.add_header("apikey",key)
+        --kong.log(ngx.req.get_headers())
+        --kong.log(kong.request.get_header('apikey'))
+      else
+        if url_token==nil
+        then
+          kong.response.exit(401,"Unauthorized:there is no token or format of token is invalid",{["Location"]=auth[(sso_index-1)*2+auth_index]})
+        else
+          my_variable['token']=url_token
+          kong.log("token=",url_token)
+        end
+      end
   else
     kong.response.exit(401,"Unauthorized:there is no token or format of token is invalid",{["Location"]=auth[(sso_index-1)*2+auth_index]})
   end
