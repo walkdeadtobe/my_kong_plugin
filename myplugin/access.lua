@@ -39,7 +39,8 @@ function _M.run()
   local path=kong.request.get_path_with_query()
   local path_pattern="/api/v1/data/(oauth|talent|recommendation|dzk|dxs|dkp|zhiku|kejie|qczx)/"..
                      "((34fa6f5dcaec9149a513c0193002e77d|e6c2550b9b069be64a79d8a40bf94bed)\\?code=[0-9a-zA-Z]{1,10}&client_id=(kexie|talent)|"..
-                     "(7b98d44dd0595d3a6928d658703c78a6|425d095b3404e19c3e8ae59c7ffe9548|f7c4905ebed8186fa5eaa462856f1be4|daef336118adb6d93875b742255dce4c|00eb8edafbc1a314967ef2e09984b97f|54f69a4614f3a06d444a63f339f68c1f|17e277023035d4a260259de5fb2e6c96|d26ab175092ef64d46ac3b54a0c00797|46223c24d04342c978087d6de0a3dcc5|96c3ea9283687775dbbac5f380842f3a|33713bba5afe32cafe719afd445adb89|fc0c864c56d424d7b0d4d7a7db82b584|09d475ff63fd0cc2edc49f1c6f972ce3|9d293aeec8e747ab866bc4918ee30e8d))"
+                     "(7b98d44dd0595d3a6928d658703c78a6|425d095b3404e19c3e8ae59c7ffe9548|f7c4905ebed8186fa5eaa462856f1be4|daef336118adb6d93875b742255dce4c|00eb8edafbc1a314967ef2e09984b97f|54f69a4614f3a06d444a63f339f68c1f|17e277023035d4a260259de5fb2e6c96|d26ab175092ef64d46ac3b54a0c00797|46223c24d04342c978087d6de0a3dcc5|96c3ea9283687775dbbac5f380842f3a|33713bba5afe32cafe719afd445adb89|fc0c864c56d424d7b0d4d7a7db82b584|09d475ff63fd0cc2edc49f1c6f972ce3|9d293aeec8e747ab866bc4918ee30e8d|
+                     96886b66d08048af65e8f85f18e8734c|054538e170ad8a84dfd5608124dbfa7d|4becb9f2bb6330bd4eb2fe97f04df76a|c296f5271fcbfc269c26103a93931dd0))"
   local start,endd,err=ngx.re.find(path,path_pattern)
   kong.log("path0:",path)
   if start == nil then
