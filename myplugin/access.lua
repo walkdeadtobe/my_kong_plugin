@@ -25,12 +25,19 @@ local token=nil
 --variable ={sso_index,auth_index,cookie=nil,forward_ip,http_refer,token}
 
 
-function _M.run()
+function _M.run(conf)
  -- cookie=ngx.req.get_header("Cookie")
   local my_variable={}
   local cookie=kong.request.get_header("Cookie")
   local forward_ip=kong.client.get_forwarded_ip()
   local http_refer=kong.request.get_header("referer")
+  my_variable['check_token'] = conf.sso_domain .. conf.check_path
+  local client = conf.client 
+  client['kexie'] = string.gsub(client['kexie'],'sso_domain',conf.sso_domain)
+  client['kexie'] = string.gsub(client['kexie'],'front_domain',conf.front_domain)
+  client['talent'] = string.gsub(client['talent'],'sso_domain',conf.sso_domain)
+  client['talent'] = string.gsub(client['talent'],'front_domain',conf.front_domain)
+  my_variable['client'] = client 
   my_variable['sso_index']=2
   my_variable['auth_index']=1
   my_variable['cookie']=cookie
@@ -80,7 +87,7 @@ function prepare(my_variable)
   local forward_ip=my_variable['forward_ip']
   local sso_index=my_variable['sso_index']
   local http_refer=my_variable['http_refer']
-  if forward_ip == nil 
+  --[[if forward_ip == nil 
   then
     kong.log.error("no forward_ip,return error")
     kong.response.exit(500, "An unexpected error occurred:there is no forward_ip")
@@ -93,7 +100,7 @@ function prepare(my_variable)
     else
       --kong.response.exit(500,"An unexpected error occurred:forward_ip should be 210.14.118.96/95 or smart.cast.org.cn")
     end
-  end
+  end]]--
 
   if http_refer == nil 
   then
@@ -106,8 +113,10 @@ function prepare(my_variable)
     if string.find(http_refer,"ep") or string.find(http_refer,"talent") then 
       --默认请求来源 210.14.118.96/ep 或 默认请求来源 210.14.118.95/talent 
       my_variable['auth_index']=2
+      my_variable['redirect'] = my_variable['client']['talent']
     else
       my_variable['auth_index']=1
+      my_variable['redirect'] = my_variable['client']['kexie']
     end
   end
   return my_variable
@@ -160,7 +169,8 @@ function handle_token(my_variable)
   local auth_index=my_variable['auth_index']
   local token=my_variable['token']
   local httpc= http:new()
-  local res,err=httpc:request_uri(sso[sso_index].."?grant_type=authorization_code&token="..token,{
+  --local res,err=httpc:request_uri(sso[sso_index].."?grant_type=authorization_code&token="..token,{
+  local res,err=httpc:request_uri(sso['check_token'].."?grant_type=authorization_code&token="..token,{
     method = "GET",
     --[[headers={
       ["grant_type"]="authorization_code",
@@ -173,7 +183,7 @@ function handle_token(my_variable)
   then
     if res.status ~= 200 
     then
-      kong.response.exit(401,"Unauthorized:token is invalid",{["Location"]=auth[(sso_index-1)*2+auth_index]})
+      kong.response.exit(401,"Unauthorized:token is invalid",{["Location"]=my_variable['redirect']})
     else
       kong.log("res.status = 200 ")
       local json = cjson.decode(res.body)
@@ -181,7 +191,7 @@ function handle_token(my_variable)
         kong.response.exit(500,"oauth server response empty body")
       end
       if json.status ~= 200 then
-        kong.response.exit(401,"Unauthorized:token is invalid",{["Location"]=auth[(sso_index-1)*2+auth_index]})
+        kong.response.exit(401,"Unauthorized:token is invalid",{["Location"]=my_variable['redirect']})
       end
       if json["PERSON_ID"] ~= nil then
         -- configure nginx log to add my_username my_username_1
@@ -234,7 +244,7 @@ function encrypt(username,token)
   ngx.req.set_header("usename++:",username)
   local encrypted = aes_128_cbc_md5:encrypt(username)
   kong.log(username," 加密后为 ",str.to_hex(encrypted))
-  ngx.req.set_header("encrypt1",(encrypted))
+  --ngx.req.set_header("encrypt1",(encrypted))
   ngx.req.set_header("encrypt",str.to_hex(encrypted))
   --kong.service.request.add_header("encrypt",str.to_hex(encrypted))
   ---]]
