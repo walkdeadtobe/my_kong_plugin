@@ -63,7 +63,7 @@ function plugin:access(plugin_conf)
   plugin.super.access(self)
 
   -- your custom code here
-  access.run()
+  access.run(plugin_conf)
 end 
  ---]]
 
