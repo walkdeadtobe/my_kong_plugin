@@ -7,8 +7,8 @@ local str = require "resty.string"
 
 
 local _M={}
-local sso={"http://111.203.146.69/oauth/check_token","http://sso-smart.cast.org.cn:8080/oauth/check_token"}
-local auth={"http://111.203.146.69/oauth/authorize?client_id=kexie&redirect_uri=/oauth/code?back_to=http://210.14.118.96/ep/cookie.html&response_type=code&scope=read",
+--local sso={"http://111.203.146.69/oauth/check_token","http://sso-smart.cast.org.cn:8080/oauth/check_token"}
+--local auth={"http://111.203.146.69/oauth/authorize?client_id=kexie&redirect_uri=/oauth/code?back_to=http://210.14.118.96/ep/cookie.html&response_type=code&scope=read",
             "http://111.203.146.69/oauth/authorize?client_id=talent&redirect_uri=/oauth/code?back_to=http://210.14.118.96/ep/cookie_talent.html&response_type=code&scope=read",
             "http://sso-smart.cast.org.cn:8080/oauth/authorize?client_id=kexie&redirect_uri=/oauth/code?back_to=http://smart.cast.org.cn/talent/cookie.html&response_type=code&scope=read",
             "http://sso-smart.cast.org.cn:8080/oauth/authorize?client_id=talent&redirect_uri=/oauth/code?back_to=http://smart.cast.org.cn/talent/cookie_talent.html&response_type=code&scope=read"
@@ -32,14 +32,15 @@ function _M.run(conf)
   local forward_ip=kong.client.get_forwarded_ip()
   local http_refer=kong.request.get_header("referer")
   my_variable['check_token'] = conf.sso_domain .. conf.check_path
-  local client = conf.client 
-  client['kexie'] = string.gsub(client['kexie'],'sso_domain',conf.sso_domain)
-  client['kexie'] = string.gsub(client['kexie'],'front_domain',conf.front_domain)
-  client['talent'] = string.gsub(client['talent'],'sso_domain',conf.sso_domain)
-  client['talent'] = string.gsub(client['talent'],'front_domain',conf.front_domain)
+  local client = string.gsub(conf.client,'\\a','&')
+  client = cjson.decode(client)
+  client['kexie'] = string.gsub(client.kexie,'sso_domain',conf.sso_domain)
+  client['kexie'] = string.gsub(client.kexie,'front_domain',conf.front_domain)
+  client['talent'] = string.gsub(client.talent,'sso_domain',conf.sso_domain)
+  client['talent'] = string.gsub(client.talent,'front_domain',conf.front_domain)
   my_variable['client'] = client 
-  my_variable['sso_index']=2
-  my_variable['auth_index']=1
+  --my_variable['sso_index']=2
+  --my_variable['auth_index']=1
   my_variable['cookie']=cookie
   my_variable['forward_ip']=forward_ip
   my_variable['http_refer']=http_refer
@@ -85,7 +86,7 @@ do some preparation
 ]]--
 function prepare(my_variable)
   local forward_ip=my_variable['forward_ip']
-  local sso_index=my_variable['sso_index']
+  --local sso_index=my_variable['sso_index']
   local http_refer=my_variable['http_refer']
   --[[if forward_ip == nil 
   then
@@ -107,15 +108,15 @@ function prepare(my_variable)
     -- 默认请求来源 210.14.118.96/95
     kong.log("there is no  http_referer ")
     -- 后面需要用到这个变量
-    my_variable['auth_index']=1
+    --my_variable['auth_index']=1
   else
     kong.log("http_referer=",http_refer)
     if string.find(http_refer,"ep") or string.find(http_refer,"talent") then 
       --默认请求来源 210.14.118.96/ep 或 默认请求来源 210.14.118.95/talent 
-      my_variable['auth_index']=2
+      --my_variable['auth_index']=2
       my_variable['redirect'] = my_variable['client']['talent']
     else
-      my_variable['auth_index']=1
+      --my_variable['auth_index']=1
       my_variable['redirect'] = my_variable['client']['kexie']
     end
   end
@@ -129,8 +130,8 @@ function get_token(my_variable)
   local cookie=my_variable['cookie']
   --提取可能存放在url中的token
   local url_token=kong.request.get_query_arg("token")
-  local sso_index=my_variable['sso_index']
-  local auth_index=my_variable['auth_index']
+  --local sso_index=my_variable['sso_index']
+  --local auth_index=my_variable['auth_index']
   if ( cookie ~=nil or url_token~= nil )
   then
       kong.log("cookie=",cookie)
@@ -148,14 +149,14 @@ function get_token(my_variable)
       else
         if url_token==nil
         then
-          kong.response.exit(401,"Unauthorized:there is no token or format of token is invalid",{["Location"]=auth[(sso_index-1)*2+auth_index]})
+          kong.response.exit(401,"Unauthorized:there is no token or format of token is invalid",{["Location"]=my_variable['redirect']})
         else
           my_variable['token']=url_token
           kong.log("token=",url_token)
         end
       end
   else
-    kong.response.exit(401,"Unauthorized:there is no token or format of token is invalid",{["Location"]=auth[(sso_index-1)*2+auth_index]})
+    kong.response.exit(401,"Unauthorized:there is no token or format of token is invalid",{["Location"]=my_variable['redirect']})
   end
   return my_variable
 end
@@ -170,7 +171,7 @@ function handle_token(my_variable)
   local token=my_variable['token']
   local httpc= http:new()
   --local res,err=httpc:request_uri(sso[sso_index].."?grant_type=authorization_code&token="..token,{
-  local res,err=httpc:request_uri(sso['check_token'].."?grant_type=authorization_code&token="..token,{
+  local res,err=httpc:request_uri(my_variable['check_token'].."?grant_type=authorization_code&token="..token,{
     method = "GET",
     --[[headers={
       ["grant_type"]="authorization_code",
