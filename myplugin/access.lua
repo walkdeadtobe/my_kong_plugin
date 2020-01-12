@@ -31,7 +31,7 @@ function _M.run(conf)
   local cookie=kong.request.get_header("Cookie")
   local forward_ip=kong.client.get_forwarded_ip()
   local http_refer=kong.request.get_header("referer")
-  my_variable['check_token'] = conf.sso_domain .. conf.check_path
+  my_variable['check_token'] = conf.sso_domain..conf.check_path
   local client = string.gsub(conf.client,'\\a','&')
   client = cjson.decode(client)
   client['kexie'] = string.gsub(client.kexie,'sso_domain',conf.sso_domain)

@@ -1,0 +1,6 @@
+curl -i -X POST http://kong:8001/plugins \
+--data 'name=kong-plugin-myplugin' \
+--data 'config.check_path=/oauth/check_token' \
+--data 'config.sso_domain=http://sso-smart.cast.org.cn:8080' \
+--data 'config.front_domain=http://smart.cast.org.cn' \
+--data 'config.client={"kexie": "sso_domain/oauth/authorize?client_id=kexie&redirect_uri=/oauth/code?back_to=front_domain/ep/cookie.html&response_type=code&scope=read","talent":"sso_domain/oauth/authorize?client_id=talent&redirect_uri=/oauth/code?back_to=front_domain/ep/cookie_talent.html&response_type=code&scope=read"}' 
